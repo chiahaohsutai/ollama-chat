@@ -7,6 +7,13 @@ import { Flex, Theme } from "@chakra-ui/react";
 export const metadata: Metadata = {
   title: "ChatGPT Clone",
   description: "ChatGPT Clone",
+  icons: [
+    {
+      href: "/favicon.png",
+      rel: "icon",
+      url: "/favicon.png",
+    },
+  ]
 };
 
 export const roboto = Roboto({
@@ -29,7 +36,7 @@ export default function RootLayout({
       <body>
         <TrpcProvider>
           <Provider>
-            <Theme appearance="light">
+            <Theme appearance="light" bg="gray.800">
               <Flex minH="100svh" fontFamily="roboto">
                 {children}
               </Flex>
