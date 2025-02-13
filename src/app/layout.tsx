@@ -1,11 +1,11 @@
-import { Provider } from "@/components/ui/provider";
 import { default as TrpcProvider } from "@/components/provider";
-import { Roboto } from "next/font/google";
-import type { Metadata } from "next";
+import { Provider } from "@/components/ui/provider";
 import { Flex, Theme } from "@chakra-ui/react";
+import type { Metadata } from "next";
+import { Roboto } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "ChatGPT Clone",
+  title: "OpenGPT",
   description: "ChatGPT Clone",
   icons: [
     {
@@ -36,8 +36,8 @@ export default function RootLayout({
       <body>
         <TrpcProvider>
           <Provider>
-            <Theme appearance="light" bg="gray.800">
-              <Flex minH="100svh" fontFamily="roboto">
+            <Theme appearance="dark" bg="gray.800">
+              <Flex fontFamily="roboto" color="white">
                 {children}
               </Flex>
             </Theme>
