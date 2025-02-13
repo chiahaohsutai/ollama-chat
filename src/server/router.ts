@@ -17,7 +17,6 @@ async function* chatCompletion(request: z.infer<typeof ChatRequest>) {
   const { model, messages } = request;
   const response = await ollama.chat({ model, messages, stream: true });
   for await (const part of response) {
-    console.log(part.message.content);
     yield part.message.content;
   }
 }

@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const Message = z.object({
-  role: z.enum(["system", "user"]),
+  role: z.enum(["system", "user", "assistant"]),
   content: z.string(),
 });
 
