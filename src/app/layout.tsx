@@ -13,7 +13,7 @@ export const metadata: Metadata = {
       rel: "icon",
       url: "/favicon.png",
     },
-  ]
+  ],
 };
 
 export const roboto = Roboto({

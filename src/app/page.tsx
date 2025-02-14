@@ -1,21 +1,23 @@
 "use client";
 
+import { Prose } from "@/components/ui/prose";
 import { trpc } from "@/server/client";
-import { Box, Flex, For, Show, Text, Textarea } from "@chakra-ui/react";
+import { Message } from "@/server/schemas";
+import { Box, Flex, For, Text, Textarea } from "@chakra-ui/react";
 import { SyntheticEvent, useEffect, useRef, useState } from "react";
 import { FaArrowUp } from "react-icons/fa";
-import { RxHamburgerMenu } from "react-icons/rx";
 import { FiEdit } from "react-icons/fi";
-import { Message } from "@/server/schemas";
+import { RxHamburgerMenu } from "react-icons/rx";
+import Markdown from "react-markdown";
 import { z } from "zod";
 
 type Message = z.infer<typeof Message>;
 
 const systemPrompt: Message = {
   role: "system",
-  content: "Your a helpful assistant.",
+  content: "Your a helpful assistant. Use markdown syntax.",
 };
-const model = "llama3.2:1b";
+const model = "openchat";
 
 export default function Page() {
   const messagesContainer = useRef<HTMLDivElement>(null);
@@ -139,8 +141,14 @@ export default function Page() {
               <For each={history}>
                 {(message, i) =>
                   message.role === "assistant" ? (
-                    <Flex key={i}>
-                      <Text>{message.content}</Text>
+                    <Flex key={i} width="100%">
+                      <Prose
+                        minWidth="100%"
+                        fontSize="lg"
+                        color="white"
+                      >
+                        <Markdown>{message.content}</Markdown>
+                      </Prose>
                     </Flex>
                   ) : (
                     <Flex key={i} justifyContent="flex-end">
