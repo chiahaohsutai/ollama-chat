@@ -17,17 +17,28 @@ const systemPrompt: Message = {
   role: "system",
   content: "Your a helpful assistant. Use markdown syntax.",
 };
-const model = "openchat";
 
 export default function Page() {
   const messagesContainer = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const chatCompletion = trpc.chatCompletion.useMutation();
+  const getModels = trpc.getModels.useMutation();
 
   const [stream, setStream] = useState<string>("");
+  const [currModel, setCurrModel] = useState<string>("");
+  const [hideSidebar, setHideSidebar] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
+
+  useEffect(() => {
+    getModels.mutate(undefined, {
+      onSuccess: (data: { models: { model: string }[] }) => {
+        setCurrModel(data.models[0].model);
+      },
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const container = messagesContainer.current;
@@ -55,6 +66,7 @@ export default function Page() {
       const msg: Message = { role: "assistant", content: currStream };
       setHistory((prev) => [...prev, msg]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stream]);
 
   async function sendChat() {
@@ -66,7 +78,7 @@ export default function Page() {
     setIsGenerating(true);
 
     const messages = [systemPrompt, ...oldHistory, userInput];
-    const variables = { model, messages };
+    const variables = { model: currModel, messages };
     chatCompletion.mutate(variables, {
       onSuccess: async (data) => {
         for await (const part of data) {
@@ -78,9 +90,41 @@ export default function Page() {
   }
 
   return (
-    <Flex height="100svh" maxHeight="100svh" width="100%" fontSize="xl" px={6}>
-      <Flex>
-        <Flex></Flex>
+    <Flex height="100svh" maxHeight="100svh" width="100%" fontSize="xl">
+      <Flex
+        overflow="hidden"
+        width={hideSidebar ? "0px" : "300px"}
+        bg="rgb(24, 25, 26)"
+        fontSize="lg"
+        transition="width 0.8s ease"
+      >
+        <Flex direction="column" minWidth="300px" p={4} overflowY="auto">
+          <Flex direction="column">
+            <Text fontSize="xl" fontWeight="800" px={3} py={2}>
+              Models
+            </Text>
+            <Flex direction="column">
+              <For each={getModels.data?.models.map((m) => m.model)}>
+                {(model, i) => (
+                  <Flex
+                    key={i}
+                    borderRadius={8}
+                    px={3}
+                    py={2}
+                    cursor="pointer"
+                    bg={currModel === model ? "gray.700" : "inherit"}
+                    _hover={{
+                      bg: currModel === model ? "gray.700" : "gray.800",
+                    }}
+                    onClick={() => setCurrModel(model)}
+                  >
+                    <Text>{model}</Text>
+                  </Flex>
+                )}
+              </For>
+            </Flex>
+          </Flex>
+        </Flex>
       </Flex>
       <Flex
         flex={1}
@@ -88,6 +132,7 @@ export default function Page() {
         gap={4}
         overflowY="auto"
         alignItems="center"
+        px={6}
       >
         <Flex direction="column" height="100%" width="100%" overflow="auto">
           <Flex
@@ -102,7 +147,6 @@ export default function Page() {
             alignItems="center"
           >
             <Flex
-              bg="gray.800"
               py={4}
               top={0}
               position="sticky"
@@ -115,6 +159,7 @@ export default function Page() {
                 cursor="pointer"
                 borderRadius={8}
                 color="gray.400"
+                onClick={() => setHideSidebar(!hideSidebar)}
               >
                 <RxHamburgerMenu size={24} />
               </Flex>
@@ -126,7 +171,7 @@ export default function Page() {
                 color="gray.400"
               >
                 <Text fontWeight="800" fontSize="2xl">
-                  OpenGPT
+                  OllamaChat
                 </Text>
               </Flex>
               <Flex
@@ -192,7 +237,7 @@ export default function Page() {
                   resize="none"
                   rows={1}
                   value={input}
-                  placeholder="Message OpenGPT"
+                  placeholder="Message Ollama"
                   _placeholder={{ color: "gray.400" }}
                   onChange={(e) => setInput(e.target.value)}
                   ref={inputRef}
@@ -207,6 +252,7 @@ export default function Page() {
                   loading={isGenerating}
                   bg={isGenerating ? "gray.500" : "white"}
                   _hover={{ bg: isGenerating ? "gray.500" : "gray.400" }}
+                  disabled={getModels.isPending}
                 >
                   <FaArrowUp size={16} color="black" />
                 </IconButton>
@@ -219,7 +265,7 @@ export default function Page() {
               pb={2}
               pt={2}
             >
-              <Text>OpenGPT can make mistakes. Check important info.</Text>
+              <Text>LLMs can make mistakes. Check important info.</Text>
             </Flex>
           </Flex>
         </Flex>
