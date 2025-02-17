@@ -1,12 +1,12 @@
-import { default as TrpcProvider } from "@/components/provider";
+import { default as TrpcProvider } from "@/components/trpc";
 import { Provider } from "@/components/ui/provider";
 import { Flex, Theme } from "@chakra-ui/react";
 import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "OpenGPT",
-  description: "ChatGPT Clone",
+  title: "OllamaChat",
+  description: "Ollama API chat interface",
   icons: [
     {
       href: "/favicon.png",
@@ -36,7 +36,7 @@ export default function RootLayout({
       <body>
         <TrpcProvider>
           <Provider>
-            <Theme appearance="dark" bg="gray.800">
+            <Theme appearance="dark" bg="rgb(36, 37, 38)">
               <Flex fontFamily="roboto" color="white">
                 {children}
               </Flex>
