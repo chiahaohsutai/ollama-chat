@@ -1,11 +1,29 @@
 "use client";
 
+import {
+  DialogActionTrigger,
+  DialogBody,
+  DialogCloseTrigger,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogRoot,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Prose } from "@/components/ui/prose";
 import { trpc } from "@/server/client";
 import { Message } from "@/server/schemas";
-import { Flex, For, IconButton, Text, Textarea } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  For,
+  IconButton,
+  Input,
+  Text,
+  Textarea,
+} from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import { FaArrowUp } from "react-icons/fa";
+import { FaArrowUp, FaPlus } from "react-icons/fa";
 import { FiEdit } from "react-icons/fi";
 import { RxHamburgerMenu } from "react-icons/rx";
 import Markdown from "react-markdown";
@@ -15,7 +33,7 @@ type Message = z.infer<typeof Message>;
 
 const systemPrompt: Message = {
   role: "system",
-  content: "Your a helpful assistant. Use markdown syntax.",
+  content: "Your a helpful assistant.",
 };
 
 export default function Page() {
@@ -30,6 +48,7 @@ export default function Page() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [history, setHistory] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
+  const [openAddDialog, setOpenAddDialog] = useState(false);
 
   useEffect(() => {
     getModels.mutate(undefined, {
@@ -37,7 +56,7 @@ export default function Page() {
         setCurrModel(data.models[0].model);
       },
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -91,6 +110,26 @@ export default function Page() {
 
   return (
     <Flex height="100svh" maxHeight="100svh" width="100%" fontSize="xl">
+      <DialogRoot
+        open={openAddDialog}
+        onOpenChange={(e) => setOpenAddDialog(e.open)}
+      >
+        <DialogContent bg="rgb(24, 25, 26)">
+          <DialogHeader>
+            <DialogTitle>Add a new model</DialogTitle>
+          </DialogHeader>
+          <DialogBody>
+            <Input placeholder="ex. deepseek-r1" />
+          </DialogBody>
+          <DialogFooter>
+            <DialogActionTrigger asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogActionTrigger>
+            <Button>Add</Button>
+          </DialogFooter>
+          <DialogCloseTrigger />
+        </DialogContent>
+      </DialogRoot>
       <Flex
         overflow="hidden"
         width={hideSidebar ? "0px" : "300px"}
@@ -99,10 +138,21 @@ export default function Page() {
         transition="width 0.8s ease"
       >
         <Flex direction="column" minWidth="300px" p={4} overflowY="auto">
-          <Flex direction="column">
-            <Text fontSize="xl" fontWeight="800" px={3} py={2}>
-              Models
-            </Text>
+          <Flex direction="column" gap={1}>
+            <Flex alignItems="center" justifyContent="space-between">
+              <Text fontSize="xl" fontWeight="800" px={3} py={2}>
+                Models
+              </Text>
+              <IconButton
+                bg="rgb(24, 25, 26)"
+                color="white"
+                size="2xs"
+                _hover={{ bg: "gray.700" }}
+                onClick={() => setOpenAddDialog(true)}
+              >
+                <FaPlus />
+              </IconButton>
+            </Flex>
             <Flex direction="column">
               <For each={getModels.data?.models.map((m) => m.model)}>
                 {(model, i) => (
