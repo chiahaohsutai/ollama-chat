@@ -41,6 +41,7 @@ export default function Page() {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const chatCompletion = trpc.chatCompletion.useMutation();
   const getModels = trpc.getModels.useMutation();
+  const pullModel = trpc.pullModel.useMutation();
 
   const [stream, setStream] = useState<string>("");
   const [currModel, setCurrModel] = useState<string>("");
@@ -49,15 +50,18 @@ export default function Page() {
   const [history, setHistory] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
   const [openAddDialog, setOpenAddDialog] = useState(false);
+  const [newModel, setNewModel] = useState<string>("");
 
-  useEffect(() => {
+  function updateModelList(model: string | null) {
     getModels.mutate(undefined, {
       onSuccess: (data: { models: { model: string }[] }) => {
-        setCurrModel(data.models[0].model);
+        setCurrModel(model == null ? data.models[0].model : model);
       },
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => updateModelList(null), []);
 
   useEffect(() => {
     const container = messagesContainer.current;
@@ -108,6 +112,21 @@ export default function Page() {
     });
   }
 
+  async function addModel() {
+    if (!newModel) return;
+    const model = newModel;
+    setNewModel("");
+    pullModel.mutate(
+      { model },
+      {
+        onSuccess: () => {
+          updateModelList(model);
+          setOpenAddDialog(false);
+        },
+      }
+    );
+  }
+
   return (
     <Flex height="100svh" maxHeight="100svh" width="100%" fontSize="xl">
       <DialogRoot
@@ -119,13 +138,19 @@ export default function Page() {
             <DialogTitle>Add a new model</DialogTitle>
           </DialogHeader>
           <DialogBody>
-            <Input placeholder="ex. deepseek-r1" />
+            <Input
+              placeholder="ex. deepseek-r1"
+              value={newModel}
+              onChange={(e) => setNewModel(e.target.value)}
+            />
           </DialogBody>
           <DialogFooter>
             <DialogActionTrigger asChild>
               <Button variant="outline">Cancel</Button>
             </DialogActionTrigger>
-            <Button>Add</Button>
+            <Button onClick={addModel} loading={pullModel.isPending}>
+              Add
+            </Button>
           </DialogFooter>
           <DialogCloseTrigger />
         </DialogContent>
