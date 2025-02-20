@@ -1,15 +1,19 @@
 import ollama from "ollama";
 import { z } from "zod";
-import { ChatRequest } from "./schemas";
+import { ChatRequest, PullRequest } from "./schemas";
 import { publicProcedure, router } from "./trpc";
 
 type ChatRequest = z.infer<typeof ChatRequest>;
+type PullRequest = z.infer<typeof PullRequest>;
 
 export const appRouter = router({
-  getModels: publicProcedure.mutation(async () => await getModels()),
+  getModels: publicProcedure.mutation(async () => await ollama.list()),
+  pullModel: publicProcedure
+    .input(PullRequest)
+    .mutation(async ({ input }) => await ollama.pull({ model: input.model })),
   chatCompletion: publicProcedure
     .input(ChatRequest)
-    .mutation(async ({ input }) => await chatCompletion(input)),
+    .mutation(async ({ input }) => chatCompletion(input)),
 });
 
 export type AppRouter = typeof appRouter;
@@ -20,8 +24,4 @@ async function* chatCompletion(request: ChatRequest) {
   for await (const part of response) {
     yield part.message.content;
   }
-}
-
-async function getModels() {
-  return await ollama.list();
 }

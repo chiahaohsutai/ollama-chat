@@ -9,3 +9,7 @@ export const ChatRequest = z.object({
   model: z.string(),
   messages: z.array(Message),
 });
+
+export const PullRequest = z.object({
+  model: z.string(),
+});
