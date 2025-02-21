@@ -28,6 +28,7 @@ import { FiEdit } from "react-icons/fi";
 import { RxHamburgerMenu } from "react-icons/rx";
 import Markdown from "react-markdown";
 import { z } from "zod";
+import { MdDeleteOutline } from "react-icons/md";
 
 type Message = z.infer<typeof Message>;
 
@@ -42,6 +43,7 @@ export default function Page() {
   const chatCompletion = trpc.chatCompletion.useMutation();
   const getModels = trpc.getModels.useMutation();
   const pullModel = trpc.pullModel.useMutation();
+  const deleteModel = trpc.deleteModel.useMutation();
 
   const [stream, setStream] = useState<string>("");
   const [currModel, setCurrModel] = useState<string>("");
@@ -112,7 +114,7 @@ export default function Page() {
     });
   }
 
-  async function addModel() {
+  function addModel() {
     if (!newModel) return;
     const model = newModel;
     setNewModel("");
@@ -125,6 +127,13 @@ export default function Page() {
         },
       }
     );
+  }
+
+  function removeModel() {
+    if (!currModel) return;
+    if (getModels.data?.models.length === 1) return;
+    const model = currModel;
+    deleteModel.mutate({ model }, { onSuccess: () => updateModelList(null) });
   }
 
   return (
@@ -168,15 +177,26 @@ export default function Page() {
               <Text fontSize="xl" fontWeight="800" px={3} py={2}>
                 Models
               </Text>
-              <IconButton
-                bg="rgb(24, 25, 26)"
-                color="white"
-                size="2xs"
-                _hover={{ bg: "gray.700" }}
-                onClick={() => setOpenAddDialog(true)}
-              >
-                <FaPlus />
-              </IconButton>
+              <Flex>
+                <IconButton
+                  bg="rgb(24, 25, 26)"
+                  color="white"
+                  size="2xs"
+                  _hover={{ bg: "gray.700" }}
+                  onClick={() => setOpenAddDialog(true)}
+                >
+                  <FaPlus />
+                </IconButton>
+                <IconButton
+                  bg="rgb(24, 25, 26)"
+                  color="white"
+                  size="2xs"
+                  _hover={{ bg: "gray.700" }}
+                  onClick={removeModel}
+                >
+                  <MdDeleteOutline />
+                </IconButton>
+              </Flex>
             </Flex>
             <Flex direction="column">
               <For each={getModels.data?.models.map((m) => m.model)}>
