@@ -1,10 +1,11 @@
 import ollama from "ollama";
 import { z } from "zod";
-import { ChatRequest, PullRequest } from "./schemas";
+import { ChatRequest, DeleteRequest, PullRequest } from "./schemas";
 import { publicProcedure, router } from "./trpc";
 
 type ChatRequest = z.infer<typeof ChatRequest>;
 type PullRequest = z.infer<typeof PullRequest>;
+type DeleteRequest = z.infer<typeof DeleteRequest>;
 
 export const appRouter = router({
   getModels: publicProcedure.mutation(async () => await ollama.list()),
@@ -14,6 +15,11 @@ export const appRouter = router({
   chatCompletion: publicProcedure
     .input(ChatRequest)
     .mutation(async ({ input }) => chatCompletion(input)),
+  deleteModel: publicProcedure
+    .input(DeleteRequest)
+    .mutation(async ({ input }) => {
+      await ollama.delete({ model: input.model });
+    }),
 });
 
 export type AppRouter = typeof appRouter;

@@ -13,3 +13,7 @@ export const ChatRequest = z.object({
 export const PullRequest = z.object({
   model: z.string(),
 });
+
+export const DeleteRequest = z.object({
+  model: z.string(),
+});
